@@ -16,6 +16,7 @@ class NoteResponse(BaseModel):
     id: int
     title: str
     description: str
+    file_url: str | None = None
 
     class Config:
         from_attributes = True

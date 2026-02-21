@@ -15,3 +15,4 @@ class Note(Base):
     title = Column(String)
     description = Column(String)
     user_id = Column(Integer, ForeignKey("users.id"))
+    file_url=Column(String,nullable=True)

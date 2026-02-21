@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Form, File, UploadFile
+from fastapi import FastAPI, Depends, HTTPException, Form, File, UploadFile, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 import uuid
@@ -34,6 +34,7 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return {"message": "User registered successfully!"}
 
 
+
 @app.post("/login")
 def login(user: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     existing_user = db.query(models.User).filter(models.User.email == user.username).first()
@@ -45,20 +46,22 @@ def login(user: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-# ---------------- CREATE NOTE ----------------
+# ---------------- Create notes ----------------
 @app.post("/notes", response_model=schemas.NoteResponse)
 async def create_note(
     title: str = Form(...),
     description: str = Form(...),
     file: UploadFile = File(None),
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user)
+    current_user: models.User = Depends(get_current_user),
+    response: Response = None
 ):
     file_url = None
 
     if file:
         unique_filename = f"{uuid.uuid4()}_{file.filename}"
         file_url = upload_file_to_s3(file.file, unique_filename, file.content_type)
+        response.headers["X-File-URL"] = file_url
 
     new_note = models.Note(
         title=title,
@@ -73,22 +76,32 @@ async def create_note(
     return new_note
 
 
-# ---------------- READ NOTES ----------------
+# ---------------- Read notes ----------------
 @app.get("/notes", response_model=list[schemas.NoteResponse])
 def read_notes(
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user)
+    current_user: models.User = Depends(get_current_user),
+    response: Response = None
 ):
-    return notes.get_user_notes(db, current_user)
+    user_notes = notes.get_user_notes(db, current_user)
+
+    urls = [note.file_url for note in user_notes if note.file_url]
+    if urls:
+        response.headers["X-File-URLs"] = ",".join(urls)
+
+    return user_notes
 
 
-# ---------------- UPDATE TITLE ----------------
-@app.put("/notes/{note_id}/title", response_model=schemas.NoteResponse)
-def update_title(
+# ---------------- UPDATE NOTE ----------------
+@app.put("/notes/{note_id}", response_model=schemas.NoteResponse)
+async def update_note(
     note_id: int,
     title: str = Form(...),
+    description: str = Form(...),
+    file: UploadFile = File(None),
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user)
+    current_user: models.User = Depends(get_current_user),
+    response: Response = None
 ):
     note = db.query(models.Note).filter(
         models.Note.id == note_id,
@@ -99,52 +112,13 @@ def update_title(
         raise HTTPException(status_code=404, detail="Note not found")
 
     note.title = title
-    db.commit()
-    db.refresh(note)
-    return note
-
-
-# ---------------- UPDATE DESCRIPTION ----------------
-@app.put("/notes/{note_id}/description", response_model=schemas.NoteResponse)
-def update_description(
-    note_id: int,
-    description: str = Form(...),
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user)
-):
-    note = db.query(models.Note).filter(
-        models.Note.id == note_id,
-        models.Note.user_id == current_user.id
-    ).first()
-
-    if not note:
-        raise HTTPException(status_code=404, detail="Note not found")
-
     note.description = description
-    db.commit()
-    db.refresh(note)
-    return note
 
-
-# ---------------- UPDATE IMAGE ----------------
-@app.put("/notes/{note_id}/file", response_model=schemas.NoteResponse)
-async def update_file(
-    note_id: int,
-    file: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user)
-):
-    note = db.query(models.Note).filter(
-        models.Note.id == note_id,
-        models.Note.user_id == current_user.id
-    ).first()
-
-    if not note:
-        raise HTTPException(status_code=404, detail="Note not found")
-
-    unique_filename = f"{uuid.uuid4()}_{file.filename}"
-    file_url = upload_file_to_s3(file.file, unique_filename, file.content_type)
-    note.file_url = file_url
+    if file:
+        unique_filename = f"{uuid.uuid4()}_{file.filename}"
+        file_url = upload_file_to_s3(file.file, unique_filename, file.content_type)
+        note.file_url = file_url
+        response.headers["X-File-URL"] = file_url
 
     db.commit()
     db.refresh(note)
@@ -169,3 +143,4 @@ def delete_note(
     db.delete(note)
     db.commit()
     return {"message": "Note deleted successfully"}
+
