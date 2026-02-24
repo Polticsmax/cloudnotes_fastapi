@@ -15,6 +15,7 @@ Production-ready FastAPI backend deployed on AWS with authentication, file stora
 
 </p>
 
+
 ---
 
 ☁️ CloudNotes Backend API
@@ -105,18 +106,24 @@ DELETE	/notes/{id}	Delete note
 
 app/
  ├─ main.py        → API routes
+ 
  ├─ auth.py        → JWT logic
+ 
  ├─ models.py      → DB models
+ 
  ├─ schemas.py     → Pydantic schemas
+ 
  ├─ database.py    → DB connection
+ 
  ├─ s3.py          → S3 upload/delete
+ 
  └─ config.py      → Environment loader
 
 system/
  ├─ cloudnotes.service → Linux service
+ 
  └─ nginx.conf         → Reverse proxy
 
-.env  (not committed)
 
 
 ---
