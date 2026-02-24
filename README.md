@@ -1,3 +1,22 @@
+<h1 align="center">☁️ CloudNotes Backend API</h1>
+
+<p align="center">
+Production-ready FastAPI backend deployed on AWS with authentication, file storage, HTTPS and monitoring
+</p>
+
+<p align="center">
+
+<img src="https://img.shields.io/badge/FastAPI-Backend-green?style=for-the-badge&logo=fastapi">
+<img src="https://img.shields.io/badge/AWS-Cloud-orange?style=for-the-badge&logo=amazonaws">
+<img src="https://img.shields.io/badge/PostgreSQL-Database-blue?style=for-the-badge&logo=postgresql">
+<img src="https://img.shields.io/badge/Docker-Container-blue?style=for-the-badge&logo=docker">
+<img src="https://img.shields.io/badge/Linux-Server-black?style=for-the-badge&logo=linux">
+<img src="https://img.shields.io/badge/Nginx-ReverseProxy-green?style=for-the-badge&logo=nginx">
+
+</p>
+
+---
+
 ☁️ CloudNotes Backend API
 
 A production‑style FastAPI backend deployed on AWS with authentication, database storage, file uploads, HTTPS, and monitoring.
