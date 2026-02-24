@@ -6,10 +6,7 @@ from app import models
 from datetime import datetime , timedelta 
 from jose import jwt
 from passlib.context import CryptContext
-
-SECRET_KEY = "super_secret_key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+from app.config import SECRET_KEY , ALGORITHM , ACCESS_TOKEN_EXPIRE_MINUTES
 
 pwd_context = CryptContext(schemes=["argon2", "bcrypt"], deprecated = "auto")
 

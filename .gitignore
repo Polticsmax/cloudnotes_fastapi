@@ -1,9 +1,24 @@
-venv/
+# Python
 __pycache__/
 *.pyc
+*.pyo
+
+# Virtual environment
+venv/
 .env
-awscliv2.zip
-*.pem
-instance-key.pem
-cloudnotes-key.pem
-gunicorn.ctl
+
+# nano backup files
+*.save*
+
+# OS files
+.DS_Store
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Database migrations / cache
+*.sqlite3

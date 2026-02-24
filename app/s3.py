@@ -1,9 +1,12 @@
 import boto3
 from botocore.exceptions import NoCredentialsError
+from app.config import BUCKET_NAME, AWS_REGION
 
-BUCKET_NAME = "cloudnotes-storage-abhilash"
 
-s3 = boto3.client("s3")
+s3 = boto3.client(
+    "s3",
+    region_name=AWS_REGION
+)
 
 
 def upload_file_to_s3(file_obj, filename, content_type):
@@ -15,7 +18,7 @@ def upload_file_to_s3(file_obj, filename, content_type):
             ExtraArgs={"ContentType": content_type}
         )
 
-        file_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{filename}"
+        file_url = f"https://{BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{filename}"
         return file_url
 
     except NoCredentialsError:
